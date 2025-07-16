@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Peak Moments - Mountaineering Photography</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <h1>Peak Moments</h1>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="#home" class="nav-link">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#gallery" class="nav-link">Gallery</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#about" class="nav-link">About</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#contact" class="nav-link">Contact</a>
+                </li>
+            </ul>
+            <div class="hamburger">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="hero-content">
+            <h1 class="hero-title">Capturing the Summit</h1>
+            <p class="hero-subtitle">Where earth meets sky, adventure begins</p>
+            <a href="#gallery" class="cta-button">Explore My Work</a>
+        </div>
+        <div class="scroll-indicator">
+            <div class="scroll-arrow"></div>
+        </div>
+    </section>
+
+    <!-- Featured Work Section -->
+    <section class="featured-work">
+        <div class="container">
+            <h2 class="section-title">Featured Expeditions</h2>
+            <div class="featured-grid">
+                <div class="featured-item large">
+                    <div class="featured-image">
+                        <img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80" alt="Mountain Peak at Sunrise">
+                    </div>
+                    <div class="featured-content">
+                        <h3>Alpine Dawn</h3>
+                        <p>The first light touches the summit</p>
+                    </div>
+                </div>
+                <div class="featured-item">
+                    <div class="featured-image">
+                        <img src="https://images.unsplash.com/photo-1544735716-392fe2489ffa?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1974&q=80" alt="Climber on Ridge">
+                    </div>
+                    <div class="featured-content">
+                        <h3>Ridge Walker</h3>
+                        <p>Journey along the knife's edge</p>
+                    </div>
+                </div>
+                <div class="featured-item">
+                    <div class="featured-image">
+                        <img src="https://images.unsplash.com/photo-1464822759844-d150baec0494?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80" alt="Mountain Range">
+                    </div>
+                    <div class="featured-content">
+                        <h3>Endless Peaks</h3>
+                        <p>Where horizons stretch infinite</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Gallery Section -->
+    <section id="gallery" class="gallery">
+        <div class="container">
+            <h2 class="section-title">Portfolio</h2>
+            <div class="gallery-filters">
+                <button class="filter-btn active" data-filter="all">All</button>
+                <button class="filter-btn" data-filter="peaks">Peaks</button>
+                <button class="filter-btn" data-filter="climbing">Climbing</button>
+                <button class="filter-btn" data-filter="landscape">Landscape</button>
+            </div>
+            <div class="gallery-grid">
+                <div class="gallery-item" data-category="peaks">
+                    <img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Mountain Peak">
+                    <div class="gallery-overlay">
+                        <h3>Summit Sunrise</h3>
+                        <p>Himalayan Expedition 2023</p>
+                    </div>
+                </div>
+                <div class="gallery-item" data-category="climbing">
+                    <img src="https://images.unsplash.com/photo-1551632811-561732d1e306?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Rock Climbing">
+                    <div class="gallery-overlay">
+                        <h3>Vertical Challenge</h3>
+                        <p>Dolomites, Italy</p>
+                    </div>
+                </div>
+                <div class="gallery-item" data-category="landscape">
+                    <img src="https://images.unsplash.com/photo-1464822759844-d150baec0494?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Mountain Landscape">
+                    <div class="gallery-overlay">
+                        <h3>Alpine Vista</h3>
+                        <p>Swiss Alps</p>
+                    </div>
+                </div>
+                <div class="gallery-item" data-category="peaks">
+                    <img src="https://images.unsplash.com/photo-1544735716-392fe2489ffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Snow Peak">
+                    <div class="gallery-overlay">
+                        <h3>Winter Ascent</h3>
+                        <p>Rocky Mountains</p>
+                    </div>
+                </div>
+                <div class="gallery-item" data-category="climbing">
+                    <img src="https://images.unsplash.com/photo-1522163182402-834f871fd851?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Ice Climbing">
+                    <div class="gallery-overlay">
+                        <h3>Frozen Cascade</h3>
+                        <p>Ice Climbing Adventure</p>
+                    </div>
+                </div>
+                <div class="gallery-item" data-category="landscape">
+                    <img src="https://images.unsplash.com/photo-1506197603052-3cc9c3a201bd?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Mountain Lake">
+                    <div class="gallery-overlay">
+                        <h3>Mirror Lake</h3>
+                        <p>Patagonia Reflections</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="about">
+        <div class="container">
+            <div class="about-content">
+                <div class="about-text">
+                    <h2 class="section-title">About the Journey</h2>
+                    <p class="about-description">
+                        For over a decade, I've dedicated my life to capturing the raw beauty and untamed spirit of the world's highest peaks. Each photograph tells a story of adventure, perseverance, and the profound connection between human determination and nature's grandeur.
+                    </p>
+                    <p class="about-description">
+                        From the technical challenges of high-altitude photography to the artistic vision required to frame the perfect shot, my work combines technical expertise with a deep passion for mountaineering and the great outdoors.
+                    </p>
+                    <div class="stats">
+                        <div class="stat">
+                            <span class="stat-number">50+</span>
+                            <span class="stat-label">Expeditions</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-number">25</span>
+                            <span class="stat-label">Countries</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-number">8000m+</span>
+                            <span class="stat-label">Highest Summit</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="about-image">
+                    <img src="https://images.unsplash.com/photo-1551632811-561732d1e306?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Photographer on Mountain">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="contact">
+        <div class="container">
+            <h2 class="section-title">Get In Touch</h2>
+            <div class="contact-content">
+                <div class="contact-info">
+                    <h3>Let's Create Something Extraordinary</h3>
+                    <p>Whether you're planning an expedition, need prints for your space, or want to collaborate on a project, I'd love to hear from you.</p>
+                    <div class="contact-details">
+                        <div class="contact-item">
+                            <span class="contact-label">Email</span>
+                            <span class="contact-value">hello@peakmoments.com</span>
+                        </div>
+                        <div class="contact-item">
+                            <span class="contact-label">Phone</span>
+                            <span class="contact-value">+1 (555) 123-4567</span>
+                        </div>
+                        <div class="contact-item">
+                            <span class="contact-label">Location</span>
+                            <span class="contact-value">Based in Colorado, USA</span>
+                        </div>
+                    </div>
+                </div>
+                <form class="contact-form">
+                    <div class="form-group">
+                        <input type="text" id="name" name="name" placeholder="Your Name" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="email" id="email" name="email" placeholder="Your Email" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="text" id="subject" name="subject" placeholder="Subject" required>
+                    </div>
+                    <div class="form-group">
+                        <textarea id="message" name="message" placeholder="Your Message" rows="5" required></textarea>
+                    </div>
+                    <button type="submit" class="submit-btn">Send Message</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <h3>Peak Moments</h3>
+                    <p>Capturing the summit of adventure</p>
+                </div>
+                <div class="footer-links">
+                    <a href="#gallery">Gallery</a>
+                    <a href="#about">About</a>
+                    <a href="#contact">Contact</a>
+                </div>
+                <div class="footer-social">
+                    <a href="#" class="social-link">Instagram</a>
+                    <a href="#" class="social-link">Facebook</a>
+                    <a href="#" class="social-link">Twitter</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Peak Moments Photography. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html> 
