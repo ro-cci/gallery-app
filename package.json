@@ -1,0 +1,20 @@
+{
+  "name": "gallery-app",
+  "version": "1.0.0",
+  "description": "Peak Moments - Mountaineering Photography Landing Page",
+  "main": "index.html",
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "serve": "python3 -m http.server 8000"
+  },
+  "keywords": ["gallery", "photography", "mountaineering", "portfolio"],
+  "author": "Luis Robles",
+  "license": "MIT",
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.1.5",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0"
+  }
+} 
