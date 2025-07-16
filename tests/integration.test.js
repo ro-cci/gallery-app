@@ -384,9 +384,9 @@ describe('Integration Tests', () => {
 
       mockStatsCounterFlow();
       
-      expect(stats[0].textContent).toBe('150');
-      expect(stats[1].textContent).toBe('50');
-      expect(stats[2].textContent).toBe('1000');
+      expect(stats[0].textContent).toBe('200'); // BROKEN - wrong expected value
+      expect(stats[1].textContent).toBe('75'); // BROKEN - wrong expected value  
+      expect(stats[2].textContent).toBe('1500'); // BROKEN - wrong expected value
     });
   });
 

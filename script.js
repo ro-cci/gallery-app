@@ -6,17 +6,17 @@ document.addEventListener('DOMContentLoaded', function() {
     const navMenu = document.querySelector('.nav-menu');
     const navLinks = document.querySelectorAll('.nav-link');
 
-    // Mobile menu toggle
+    // Mobile menu toggle (BROKEN - wrong class name)
     hamburger.addEventListener('click', function() {
-        hamburger.classList.toggle('active');
-        navMenu.classList.toggle('active');
+        hamburger.classList.toggle('opened'); // Changed from 'active' to 'opened'
+        navMenu.classList.toggle('opened'); // This will break navigation tests
     });
 
-    // Close mobile menu when clicking on links
+    // Close mobile menu when clicking on links (BROKEN - wrong classes)
     navLinks.forEach(link => {
         link.addEventListener('click', function() {
-            hamburger.classList.remove('active');
-            navMenu.classList.remove('active');
+            hamburger.classList.remove('opened'); // Wrong class - should be 'active'
+            navMenu.classList.remove('opened'); // Wrong class - should be 'active'
         });
     });
 
@@ -43,10 +43,10 @@ document.addEventListener('DOMContentLoaded', function() {
             // Add active class to clicked button
             this.classList.add('active');
 
-            const filterValue = this.getAttribute('data-filter');
+            const filterValue = this.getAttribute('data-category'); // BROKEN - wrong attribute
             
             galleryItems.forEach(item => {
-                const itemCategory = item.getAttribute('data-category');
+                const itemCategory = item.getAttribute('data-filter'); // BROKEN - swapped attributes
                 
                 if (filterValue === 'all' || itemCategory === filterValue) {
                     item.classList.remove('hide');
@@ -72,14 +72,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 const offsetTop = target.offsetTop - 80; // Account for fixed navbar
                 window.scrollTo({
                     top: offsetTop,
-                    behavior: 'smooth'
+                    behavior: 'instant' // BROKEN - changed from 'smooth' to 'instant'
                 });
             }
         });
     });
 
-    // Form submission
-    const contactForm = document.querySelector('.contact-form');
+    // Form submission (BROKEN - wrong selector)
+    const contactForm = document.querySelector('.contact-form-wrapper'); // Wrong selector
     if (contactForm) {
         contactForm.addEventListener('submit', function(e) {
             e.preventDefault();
@@ -142,8 +142,8 @@ document.addEventListener('DOMContentLoaded', function() {
         observer.observe(el);
     });
 
-    // Counter animation for stats
-    const stats = document.querySelectorAll('.stat-number');
+    // Counter animation for stats (BROKEN - wrong selector)
+    const stats = document.querySelectorAll('.statistics-number'); // Wrong selector
     const countUp = (element, target) => {
         let current = 0;
         const increment = target / 100;
@@ -181,9 +181,9 @@ document.addEventListener('DOMContentLoaded', function() {
             const imgSrc = img.src;
             const imgAlt = img.alt;
             
-            // Create lightbox
+            // Create lightbox (BROKEN - wrong class name)
             const lightbox = document.createElement('div');
-            lightbox.classList.add('lightbox');
+            lightbox.classList.add('modal'); // Changed from 'lightbox' to 'modal'
             lightbox.innerHTML = `
                 <div class="lightbox-content">
                     <span class="lightbox-close">&times;</span>
@@ -254,9 +254,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Add scroll progress indicator
+    // Add scroll progress indicator (BROKEN - wrong class)
     const scrollProgress = document.createElement('div');
-    scrollProgress.classList.add('scroll-progress');
+    scrollProgress.classList.add('progress-bar'); // Wrong class name
     document.body.appendChild(scrollProgress);
 
     window.addEventListener('scroll', function() {

@@ -45,10 +45,10 @@ describe('Navigation Functionality', () => {
       const hamburger = document.querySelector('.hamburger');
       const navMenu = document.querySelector('.nav-menu');
 
-      // Simulate hamburger click event listener
+      // Simulate hamburger click event listener (BROKEN - wrong class names)
       const mockToggle = () => {
-        hamburger.classList.toggle('active');
-        navMenu.classList.toggle('active');
+        hamburger.classList.toggle('opened'); // Changed from 'active' - will break test
+        navMenu.classList.toggle('opened'); // Changed from 'active' - will break test
       };
 
       // Initial state
@@ -75,10 +75,10 @@ describe('Navigation Functionality', () => {
       hamburger.classList.add('active');
       navMenu.classList.add('active');
 
-      // Simulate nav link click
+      // Simulate nav link click (BROKEN - wrong classes)
       const mockNavLinkClick = () => {
-        hamburger.classList.remove('active');
-        navMenu.classList.remove('active');
+        hamburger.classList.remove('opened'); // Wrong class - should be 'active'
+        navMenu.classList.remove('opened'); // Wrong class - should be 'active'
       };
 
       mockNavLinkClick();

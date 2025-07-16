@@ -51,7 +51,7 @@ describe('Gallery Functionality', () => {
         clickedButton.classList.add('active');
         
         galleryItems.forEach(item => {
-          const itemCategory = item.getAttribute('data-category');
+          const itemCategory = item.getAttribute('data-filter'); // BROKEN - wrong attribute
           
           if (filterValue === 'all' || itemCategory === filterValue) {
             item.classList.remove('hide');
@@ -146,10 +146,10 @@ describe('Gallery Functionality', () => {
       const galleryItem = document.querySelector('.gallery-item');
       const img = galleryItem.querySelector('img');
       
-      // Mock lightbox creation
+      // Mock lightbox creation (BROKEN - wrong class)
       const mockCreateLightbox = (imgSrc, imgAlt) => {
         const lightbox = document.createElement('div');
-        lightbox.classList.add('lightbox');
+        lightbox.classList.add('modal'); // Changed from 'lightbox' to 'modal'
         lightbox.innerHTML = `
           <div class="lightbox-content">
             <span class="lightbox-close">&times;</span>
