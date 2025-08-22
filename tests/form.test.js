@@ -149,9 +149,9 @@ describe('Contact Form Functionality', () => {
       const submitBtn = document.querySelector('.submit-btn');
       const originalText = submitBtn.textContent;
 
-      // Mock submission state changes (BROKEN - wrong text)
+      // Mock submission state changes
       const mockSubmissionStart = () => {
-        submitBtn.textContent = 'Loading...'; // Changed from 'Sending...'
+        submitBtn.textContent = 'Sending...';
         submitBtn.disabled = true;
       };
 
