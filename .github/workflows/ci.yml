@@ -28,12 +28,26 @@ jobs:
       run: npm ci
       
     - name: Run tests
-      run: npm test
+      shell: bash
+      run: |
+        set -o pipefail
+        npm test 2>&1 | tee test-output.txt
       
     - name: Generate test coverage
       run: npm run test:coverage
       continue-on-error: true
       
+    - name: Upload CI test logs
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: ci-logs-${{ matrix.node-version }}
+        path: |
+          test-output.txt
+          coverage/lcov.info
+        if-no-files-found: ignore
+        retention-days: 3
+
     - name: Upload coverage reports
       uses: codecov/codecov-action@v4
       if: matrix.node-version == '20.x'
@@ -60,13 +74,24 @@ jobs:
       run: npm ci
       
     - name: Check code style (if eslint is configured)
+      shell: bash
       run: |
-        if [ -f .eslintrc.js ] || [ -f .eslintrc.json ] || [ -f package.json ] && grep -q "eslint" package.json; then
-          npm run lint || echo "No lint script found, skipping..."
+        set -o pipefail
+        if [ -f .eslintrc.js ] || [ -f .eslintrc.json ] || { [ -f package.json ] && grep -q "eslint" package.json; }; then
+          npm run lint 2>&1 | tee lint-output.txt || true
         else
-          echo "No ESLint configuration found, skipping lint check"
+          echo "No ESLint configuration found, skipping lint check" | tee lint-output.txt
         fi
       continue-on-error: true
+
+    - name: Upload lint logs
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: lint-logs
+        path: lint-output.txt
+        if-no-files-found: ignore
+        retention-days: 3
 
   build-check:
     runs-on: ubuntu-latest
@@ -85,13 +110,26 @@ jobs:
       run: npm ci
       
     - name: Check if build script exists and run it
+      shell: bash
       run: |
-        if npm run build --if-present; then
-          echo "Build completed successfully"
-        else
-          echo "No build script found or build failed"
-        fi
+        set -o pipefail
+        {
+          if npm run build --if-present; then
+            echo "Build completed successfully"
+          else
+            echo "No build script found or build failed"
+          fi
+        } 2>&1 | tee build-output.txt
       continue-on-error: true
+
+    - name: Upload build logs
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-logs
+        path: build-output.txt
+        if-no-files-found: ignore
+        retention-days: 3
 
   test-summary:
     runs-on: ubuntu-latest
@@ -135,3 +173,41 @@ jobs:
           # TODO: Replace the next line with the official Cursor Agent invocation from Cursor's docs
           # Example:
           # cursor-agent pr-review --pr ${{ github.event.pull_request.number }}
+
+  auto-fix:
+    name: Cursor Auto-Fix CI Failures
+    runs-on: ubuntu-latest
+    needs: [test, lint, build-check]
+    if: ${{ failure() && github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false }}
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download CI artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ci-artifacts
+          merge-multiple: true
+
+      - name: Install Cursor CLI (placeholder)
+        run: |
+          echo "Install the Cursor CLI per docs here"
+          # e.g.:
+          # npm install -g @cursor/cli
+          # or curl -fsSL ... | bash
+
+      - name: Run Cursor auto-fix (placeholder)
+        env:
+          CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Running Cursor auto-fix with logs as context"
+          ls -R ci-artifacts || true
+          # Replace with official command from https://docs.cursor.com/en/cli/cookbook/auto-fix-ci
+          # Example:
+          # cursor ai auto-fix \
+          #   --inputs "ci-artifacts/test-output.txt ci-artifacts/lint-output.txt ci-artifacts/build-output.txt" \
+          #   --open-pr --title "Auto-fix CI failures" --body "Automated fix attempt"
