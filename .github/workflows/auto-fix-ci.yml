@@ -3,6 +3,7 @@ name: Auto Fix CI Failures
 on:
   workflow_run:
     workflows: [Simple Test]
+
     types: [completed]
 
 permissions:
