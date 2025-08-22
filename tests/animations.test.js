@@ -152,7 +152,7 @@ describe('Animations and Effects', () => {
       const targetValue = 100;
       mockCountUp(statElement, targetValue);
       
-      expect(statElement.textContent).toBe('150'); // BROKEN - wrong expected value
+      expect(statElement.textContent).toBe('100');
     });
 
     test('should extract numeric value from text content', () => {
@@ -196,10 +196,10 @@ describe('Animations and Effects', () => {
 
   describe('Scroll Progress Indicator', () => {
     test('should create and update scroll progress indicator', () => {
-      // Mock scroll progress creation (BROKEN - wrong class)
+      // Mock scroll progress creation
       const mockCreateScrollProgress = () => {
         const scrollProgress = document.createElement('div');
-        scrollProgress.classList.add('progress-bar'); // Changed from 'scroll-progress'
+        scrollProgress.classList.add('scroll-progress');
         document.body.appendChild(scrollProgress);
         return scrollProgress;
       };
