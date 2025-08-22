@@ -385,7 +385,7 @@ describe('Integration Tests', () => {
       mockStatsCounterFlow();
       
       expect(stats[0].textContent).toBe('150');
-      expect(stats[1].textContent).toBe('50');  
+      expect(stats[1].textContent).toBe('50');
       expect(stats[2].textContent).toBe('1000');
     });
   });
