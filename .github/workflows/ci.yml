@@ -28,12 +28,26 @@ jobs:
       run: npm ci
       
     - name: Run tests
-      run: npm test
+      shell: bash
+      run: |
+        set -o pipefail
+        npm test 2>&1 | tee test-output.txt
       
     - name: Generate test coverage
       run: npm run test:coverage
       continue-on-error: true
       
+    - name: Upload CI test logs
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: ci-logs-${{ matrix.node-version }}
+        path: |
+          test-output.txt
+          coverage/lcov.info
+        if-no-files-found: ignore
+        retention-days: 3
+
     - name: Upload coverage reports
       uses: codecov/codecov-action@v4
       if: matrix.node-version == '20.x'
@@ -60,13 +74,24 @@ jobs:
       run: npm ci
       
     - name: Check code style (if eslint is configured)
+      shell: bash
       run: |
-        if [ -f .eslintrc.js ] || [ -f .eslintrc.json ] || [ -f package.json ] && grep -q "eslint" package.json; then
-          npm run lint || echo "No lint script found, skipping..."
+        set -o pipefail
+        if [ -f .eslintrc.js ] || [ -f .eslintrc.json ] || { [ -f package.json ] && grep -q "eslint" package.json; }; then
+          npm run lint 2>&1 | tee lint-output.txt || true
         else
-          echo "No ESLint configuration found, skipping lint check"
+          echo "No ESLint configuration found, skipping lint check" | tee lint-output.txt
         fi
       continue-on-error: true
+
+    - name: Upload lint logs
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: lint-logs
+        path: lint-output.txt
+        if-no-files-found: ignore
+        retention-days: 3
 
   build-check:
     runs-on: ubuntu-latest
@@ -85,13 +110,26 @@ jobs:
       run: npm ci
       
     - name: Check if build script exists and run it
+      shell: bash
       run: |
-        if npm run build --if-present; then
-          echo "Build completed successfully"
-        else
-          echo "No build script found or build failed"
-        fi
+        set -o pipefail
+        {
+          if npm run build --if-present; then
+            echo "Build completed successfully"
+          else
+            echo "No build script found or build failed"
+          fi
+        } 2>&1 | tee build-output.txt
       continue-on-error: true
+
+    - name: Upload build logs
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-logs
+        path: build-output.txt
+        if-no-files-found: ignore
+        retention-days: 3
 
   test-summary:
     runs-on: ubuntu-latest
@@ -112,3 +150,92 @@ jobs:
         else
           echo "❌ Some tests failed. Check the test job for details." >> $GITHUB_STEP_SUMMARY
         fi
+
+  cursor-agent:
+    name: Cursor Agent
+    runs-on: ubuntu-latest
+    needs: [test, lint, build-check]
+    if: ${{ always() && github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false }}
+    permissions:
+      contents: write
+      pull-requests: write
+      checks: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run Cursor Agent on PR
+        env:
+          CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Running Cursor Agent after CI on PR #${{ github.event.pull_request.number }}"
+          # TODO: Replace the next line with the official Cursor Agent invocation from Cursor's docs
+          # Example:
+          # cursor-agent pr-review --pr ${{ github.event.pull_request.number }}
+
+  auto-fix:
+    name: Cursor Auto-Fix CI Failures
+    runs-on: ubuntu-latest
+    needs: [test, lint, build-check]
+    if: ${{ failure() && github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false }}
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download CI artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ci-artifacts
+          merge-multiple: true
+
+      - name: Install Cursor CLI (placeholder)
+        run: |
+          curl https://cursor.com/install -fsS | bash
+          echo "$HOME/.cursor/bin" >> $GITHUB_PATH
+
+          - name: Configure git identity
+          run: |
+            git config user.name "Cursor Agent"
+            git config user.email "cursoragent@cursor.com"
+  
+      - name: Fix CI failure
+        env:
+            CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
+            MODEL: gpt-5
+            GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            BRANCH_PREFIX: ci-fix
+          run: |
+            cursor-agent -p "You are operating in a GitHub Actions runner.
+  
+            The GitHub CLI is available as `gh` and authenticated via `GH_TOKEN`. Git is available. You have write access to repository contents and can comment on pull requests, but you must not create or edit PRs directly.
+  
+            # Context:
+            - Repo: ${{ github.repository }}
+            - Owner: ${{ github.repository_owner }}
+            - Workflow Run ID: ${{ github.event.workflow_run.id }}
+            - Workflow Run URL: ${{ github.event.workflow_run.html_url }}
+            - Fix Branch Prefix: ${{ env.BRANCH_PREFIX }}
+  
+            # Goal:
+            - Implement an end-to-end CI fix flow driven by the failing PR, creating a separate persistent fix branch and proposing a quick-create PR back into the original PR's branch.
+  
+            # Requirements:
+            1) Identify the PR associated with the failed workflow run and determine its base and head branches. Let HEAD_REF be the PR's head branch (the contributor/origin branch).
+            2) Maintain a persistent fix branch for this PR head using the Fix Branch Prefix from Context. Create it if missing, update it otherwise, and push changes to origin.
+            3) Attempt to resolve the CI failure by making minimal, targeted edits consistent with the repo's style. Keep changes scoped and safe.
+            4) You do NOT have permission to create PRs. Instead, post or update a single natural-language PR comment (1–2 sentences) that briefly explains the CI fix and includes an inline compare link to quick-create a PR.
+  
+            # Inputs and conventions:
+            - Use `gh api`, `gh run view`, `gh pr view`, `gh pr diff`, `gh pr list`, `gh run download`, and git commands as needed to discover the failing PR and branches.
+            - Avoid duplicate comments; if a previous bot comment exists, update it instead of posting a new one.
+            - If no actionable fix is possible, make no changes and post no comment.
+  
+            # Deliverables when updates occur:
+            - Pushed commits to the persistent fix branch for this PR head.
+            - A single natural-language PR comment on the original PR that includes the inline compare link above.
+            " --force --model "$MODEL" --output-format=text
+  
