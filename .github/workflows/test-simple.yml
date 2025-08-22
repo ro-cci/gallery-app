@@ -2,9 +2,9 @@ name: Simple Test
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, testing_cursor ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, testing_cursor ]
 
 jobs:
   test:
@@ -28,6 +28,11 @@ jobs:
       run: |
         set -o pipefail
         npm test 2>&1 | tee test-output.txt
+
+    - name: Intentionally fail step (for testing)
+      run: |
+        echo "Forcing failure on testing_cursor branch"
+        exit 1
 
     - name: Upload test logs
       if: always()
