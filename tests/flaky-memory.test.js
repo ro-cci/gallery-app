@@ -17,9 +17,13 @@ describe('Flaky Memory and State Pollution Tests', () => {
       </div>
     `;
     
-    // Intentionally NOT resetting shared state to create pollution
+    // Intentionally NOT resetting shared state to create MORE pollution
     // globalCounter = 0;  // COMMENTED OUT - causes state pollution
     // sharedCache = {};   // COMMENTED OUT - causes state pollution
+    
+    // Actually increment counter to guarantee pollution
+    globalCounter += Math.floor(Math.random() * 5) + 1; // Add 1-5 to counter each time
+    sharedCache[`pollution-${Date.now()}`] = 'polluted data'; // Add random cache entries
   });
 
   // FLAKY TEST 25: Shared counter state pollution

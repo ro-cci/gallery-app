@@ -35,11 +35,12 @@ describe('Flaky Randomness-Based Tests', () => {
     const score2 = mockGenerateScore();
     const score3 = mockGenerateScore();
     
-    // These assertions assume specific random outcomes
-    expect(score1).toBeGreaterThan(50); // FLAKY: might be <= 50
-    expect(score2).toBeLessThan(75); // FLAKY: might be >= 75
-    expect(score3).toBe(42); // FLAKY: extremely unlikely to be exactly 42
-    expect(score1 + score2 + score3).toBeGreaterThan(150); // FLAKY: sum might be <= 150
+    // These assertions assume specific random outcomes - made more restrictive
+    expect(score1).toBeGreaterThan(75); // FLAKY: ~75% chance of being <= 75
+    expect(score2).toBeLessThan(25); // FLAKY: ~75% chance of being >= 25
+    expect(score3).toBe(42); // FLAKY: ~99% chance of not being exactly 42
+    expect(score1 + score2 + score3).toBeGreaterThan(200); // FLAKY: ~85% chance sum <= 200
+    expect(score1).toBe(score2); // FLAKY: ~99% chance they're different
   });
 
   // FLAKY TEST 12: Date/time dependent behavior
@@ -113,10 +114,11 @@ describe('Flaky Randomness-Based Tests', () => {
       }
     }
 
-    // These assertions assume specific probability outcomes
-    expect(successCount).toBeGreaterThan(5); // FLAKY: might get unlucky with random
-    expect(successCount).toBeLessThan(9); // FLAKY: might get very lucky
+    // These assertions assume very specific probability outcomes - much more restrictive
+    expect(successCount).toBe(7); // FLAKY: exact count rarely matches expected value
+    expect(successCount).toBeGreaterThan(8); // FLAKY: ~65% chance of being <= 8
     expect(failureCount).toBe(3); // FLAKY: exact count is unpredictable
+    expect(successCount).toBeLessThan(6); // FLAKY: ~80% chance of being >= 6
     expect(successCount + failureCount).toBe(iterations);
   });
 
@@ -124,21 +126,22 @@ describe('Flaky Randomness-Based Tests', () => {
   test('should generate unique IDs (FLAKY: ID collision)', () => {
     const generatedIds = new Set();
     
-    // Mock simple random ID generator (prone to collisions)
+    // Mock simple random ID generator with higher collision probability
     const mockGenerateId = () => {
-      return Math.floor(Math.random() * 1000).toString();
+      return Math.floor(Math.random() * 100).toString(); // Reduced range for more collisions
     };
 
-    // Generate multiple IDs
-    for (let i = 0; i < 50; i++) {
+    // Generate multiple IDs - more than the range to guarantee collisions
+    for (let i = 0; i < 150; i++) {
       const id = mockGenerateId();
       generatedIds.add(id);
     }
 
-    // These assertions assume no collisions
-    expect(generatedIds.size).toBe(50); // FLAKY: collisions will make this fail
-    expect(Array.from(generatedIds)).toContain('42'); // FLAKY: specific ID might not be generated
-    expect(Array.from(generatedIds)).not.toContain('999'); // FLAKY: might actually contain 999
+    // These assertions assume no collisions - will fail ~95% of the time
+    expect(generatedIds.size).toBe(150); // FLAKY: collisions will make this fail almost always
+    expect(generatedIds.size).toBeGreaterThan(120); // FLAKY: ~70% chance of being <= 120
+    expect(Array.from(generatedIds)).toContain('42'); // FLAKY: ~60% chance of not containing 42
+    expect(Array.from(generatedIds)).not.toContain('99'); // FLAKY: ~65% chance of containing 99
   });
 
   // FLAKY TEST 16: Random selection from array

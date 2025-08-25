@@ -22,9 +22,9 @@ describe('Flaky DOM-Dependent Tests', () => {
     const container = document.getElementById('element-list');
     const addButton = document.getElementById('add-element');
     
-    // Mock dynamic element creation with variable timing
+    // Mock dynamic element creation with longer variable timing
     const mockAddElement = () => {
-      const delay = Math.random() * 50; // 0-50ms delay
+      const delay = Math.random() * 150 + 50; // 50-200ms delay - much longer
       setTimeout(() => {
         const newElement = document.createElement('div');
         newElement.className = 'dynamic-item';
@@ -35,10 +35,12 @@ describe('Flaky DOM-Dependent Tests', () => {
 
     mockAddElement();
     
-    // Immediately check for element - might not exist yet due to setTimeout
-    const dynamicElement = document.querySelector('.dynamic-item');
-    expect(dynamicElement).toBeInTheDocument(); // FLAKY: element might not exist yet
-    expect(dynamicElement.textContent).toBe('Dynamic Item'); // FLAKY: might throw if element is null
+    // Add a small delay that's insufficient most of the time
+    setTimeout(() => {
+      const dynamicElement = document.querySelector('.dynamic-item');
+      expect(dynamicElement).toBeInTheDocument(); // FLAKY: element will not exist ~75% of the time
+      expect(dynamicElement.textContent).toBe('Dynamic Item'); // FLAKY: will throw ~75% of the time
+    }, 80); // 80ms check - usually before 50-200ms creation completes
   });
 
   // FLAKY TEST 7: Element dimensions and rendering
@@ -85,23 +87,24 @@ describe('Flaky DOM-Dependent Tests', () => {
       // Add to DOM first
       container.appendChild(element);
       
-      // Add event listener with slight delay (simulating framework behavior)
+      // Add event listener with longer delay (simulating framework behavior)
       setTimeout(() => {
         element.addEventListener('click', () => {
           clickCount++;
         });
-      }, Math.random() * 20); // 0-20ms delay for event listener attachment
+      }, Math.random() * 100 + 50); // 50-150ms delay for event listener attachment
       
       return element;
     };
 
     const clickableElement = mockCreateClickableElement();
     
-    // Try to click immediately - event listener might not be attached yet
-    clickableElement.click();
-    
-    expect(clickCount).toBe(1); // FLAKY: might be 0 if event listener not attached yet
-    expect(clickableElement).toBeInTheDocument();
+    // Try to click after short delay - event listener will often not be attached yet
+    setTimeout(() => {
+      clickableElement.click();
+      expect(clickCount).toBe(1); // FLAKY: will be 0 about 70% of the time
+      expect(clickableElement).toBeInTheDocument();
+    }, 75); // 75ms - often before 50-150ms listener attachment
   });
 
   // FLAKY TEST 9: CSS class application timing

@@ -33,10 +33,12 @@ describe('Flaky Environment-Dependent Tests', () => {
     const detectedBrowser = mockDetectBrowser();
     userAgentDisplay.textContent = detectedBrowser;
     
-    // These assertions depend on the test environment's user agent
-    expect(detectedBrowser).toBe('Chrome'); // FLAKY: depends on actual browser/environment
-    expect(navigator.userAgent).toContain('Chrome'); // FLAKY: might be different in CI/different environments
-    expect(userAgentDisplay.textContent).toBe('Chrome');
+    // These assertions assume very specific browser - will fail in most environments
+    expect(detectedBrowser).toBe('Firefox'); // FLAKY: likely wrong in most test environments
+    expect(navigator.userAgent).toContain('Safari'); // FLAKY: likely wrong in most environments
+    expect(navigator.userAgent).toContain('Edge'); // FLAKY: likely wrong in most environments
+    expect(userAgentDisplay.textContent).toBe('Internet Explorer'); // FLAKY: very unlikely to be IE
+    expect(detectedBrowser).toBe('Opera'); // FLAKY: very unlikely to be Opera
   });
 
   // FLAKY TEST 36: Screen resolution dependent
@@ -57,11 +59,13 @@ describe('Flaky Environment-Dependent Tests', () => {
     const screenData = mockGetScreenInfo();
     screenInfo.textContent = `${screenData.width}x${screenData.height}`;
     
-    // These assertions assume specific screen dimensions
-    expect(screenData.width).toBe(1920); // FLAKY: depends on actual screen resolution
-    expect(screenData.height).toBe(1080); // FLAKY: depends on actual screen resolution
-    expect(screenData.pixelRatio).toBe(1); // FLAKY: depends on device pixel ratio
-    expect(screenInfo.textContent).toBe('1920x1080'); // FLAKY: depends on screen size
+    // These assertions assume very specific and unlikely screen dimensions
+    expect(screenData.width).toBe(3840); // FLAKY: assumes 4K monitor - unlikely in most test environments
+    expect(screenData.height).toBe(2160); // FLAKY: assumes 4K monitor - unlikely in most test environments
+    expect(screenData.pixelRatio).toBe(3); // FLAKY: assumes high-DPI display - unlikely in test environments
+    expect(screenData.width).toBeLessThan(1000); // FLAKY: most screens are >= 1000px wide
+    expect(screenInfo.textContent).toBe('800x600'); // FLAKY: very unlikely resolution for modern systems
+    expect(screenData.availWidth).toBe(screenData.width + 100); // FLAKY: availWidth is never > width
   });
 
   // FLAKY TEST 37: Timezone dependent behavior

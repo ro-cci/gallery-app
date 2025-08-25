@@ -30,11 +30,11 @@ describe('Flaky Network-Dependent Tests', () => {
   test('should handle API response timing (FLAKY: network timing)', async () => {
     const resultDiv = document.getElementById('api-result');
     
-    // Mock API response with random delay
+    // Mock API response with random delay and higher failure rate
     const mockApiCall = () => {
       return new Promise((resolve, reject) => {
-        const delay = Math.random() * 1000 + 500; // 500-1500ms
-        const shouldFail = Math.random() < 0.1; // 10% chance of failure
+        const delay = Math.random() * 2000 + 800; // 800-2800ms - longer delays
+        const shouldFail = Math.random() < 0.4; // 40% chance of failure - much higher
         
         setTimeout(() => {
           if (shouldFail) {
@@ -55,13 +55,14 @@ describe('Flaky Network-Dependent Tests', () => {
       
       resultDiv.textContent = response.data;
       
-      // These assertions assume specific timing and success
+      // These assertions assume specific timing and success - more restrictive
       expect(response.data).toBe('API response');
-      expect(duration).toBeLessThan(1000); // FLAKY: might take longer than 1000ms
+      expect(duration).toBeLessThan(1200); // FLAKY: ~75% chance of taking longer than 1200ms
+      expect(duration).toBeGreaterThan(2500); // FLAKY: ~80% chance of being less than 2500ms
       expect(resultDiv.textContent).toBe('API response');
     } catch (error) {
-      // This catch block makes the test pass sometimes, fail sometimes
-      expect(error.message).toBe('Network error'); // FLAKY: test fails when network succeeds
+      // This catch block makes the test fail when network fails (40% of time)
+      expect(error.message).toBe('Success response'); // FLAKY: will fail when network actually fails
     }
   });
 
@@ -103,11 +104,11 @@ describe('Flaky Network-Dependent Tests', () => {
     let attemptCount = 0;
     const maxRetries = 3;
     
-    // Mock API that fails randomly
+    // Mock API that fails more often
     const mockUnreliableApi = () => {
       attemptCount++;
       return new Promise((resolve, reject) => {
-        const failureRate = 0.6; // 60% failure rate
+        const failureRate = 0.85; // 85% failure rate - much higher
         const shouldFail = Math.random() < failureRate;
         
         setTimeout(() => {
@@ -116,7 +117,7 @@ describe('Flaky Network-Dependent Tests', () => {
           } else {
             resolve({ success: true, attempts: attemptCount });
           }
-        }, Math.random() * 100 + 50);
+        }, Math.random() * 200 + 100); // Longer delays
       });
     };
 
@@ -127,7 +128,7 @@ describe('Flaky Network-Dependent Tests', () => {
           return await mockUnreliableApi();
         } catch (error) {
           if (i === maxRetries - 1) throw error;
-          await new Promise(resolve => setTimeout(resolve, 100));
+          await new Promise(resolve => setTimeout(resolve, 50)); // Shorter retry delay
         }
       }
     };
@@ -135,13 +136,14 @@ describe('Flaky Network-Dependent Tests', () => {
     try {
       const result = await mockRetryRequest();
       
-      // These assertions assume success within retry limit
+      // These assertions assume success within retry limit - more restrictive
       expect(result.success).toBe(true);
-      expect(result.attempts).toBeLessThanOrEqual(maxRetries); // FLAKY: might exceed retries
-      expect(attemptCount).toBe(2); // FLAKY: attempt count is random
+      expect(result.attempts).toBe(1); // FLAKY: ~85% chance of not being 1
+      expect(attemptCount).toBe(2); // FLAKY: attempt count is very random with 85% failure rate
+      expect(result.attempts).toBeLessThan(2); // FLAKY: ~85% chance of being >= 2
     } catch (error) {
-      // Test might fail if all retries are exhausted
-      expect(attemptCount).toBe(maxRetries); // FLAKY: depends on random failures
+      // Test will fail when all retries are exhausted (~50% of the time with 85% failure rate)
+      expect(error.message).toBe('Success'); // FLAKY: will fail when retries actually exhausted
     }
   });
 
