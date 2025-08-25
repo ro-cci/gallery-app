@@ -175,6 +175,9 @@ For issues or questions about customizing this template:
 2. Validate HTML and CSS syntax
 3. Test on different devices and browsers
 
+
+
+
 ---
 
 **Built with ❤️ for mountaineering photographers**
