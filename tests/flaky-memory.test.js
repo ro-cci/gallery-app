@@ -7,6 +7,7 @@ describe('Flaky Memory and State Pollution Tests', () => {
   let globalCounter = 0;
   let sharedCache = {};
   let eventListeners = [];
+  let activeTimers = []; // Track active timers for cleanup
   
   beforeEach(() => {
     document.body.innerHTML = `
@@ -17,13 +18,66 @@ describe('Flaky Memory and State Pollution Tests', () => {
       </div>
     `;
     
-    // Intentionally NOT resetting shared state to create MORE pollution
-    // globalCounter = 0;  // COMMENTED OUT - causes state pollution
-    // sharedCache = {};   // COMMENTED OUT - causes state pollution
+    // Reset shared state to prevent pollution
+    globalCounter = 0;
+    sharedCache = {};
+    eventListeners = [];
+    activeTimers = [];
     
-    // Actually increment counter to guarantee pollution
-    globalCounter += Math.floor(Math.random() * 5) + 1; // Add 1-5 to counter each time
-    sharedCache[`pollution-${Date.now()}`] = 'polluted data'; // Add random cache entries
+    // Clear any global variables from previous tests
+    delete window.testGlobal;
+    delete window.userPreferences;
+    delete global.debugMode;
+    
+    // Clear localStorage
+    localStorage.clear();
+    
+    // Remove any CSS classes added by previous tests
+    document.body.className = '';
+    document.querySelectorAll('.state-container').forEach(el => {
+      el.className = 'state-container';
+    });
+  });
+  
+  afterEach(() => {
+    // Clean up all active timers
+    activeTimers.forEach(timer => {
+      if (timer.type === 'interval') {
+        clearInterval(timer.id);
+      } else if (timer.type === 'timeout') {
+        clearTimeout(timer.id);
+      }
+    });
+    activeTimers = [];
+    
+    // Remove any event listeners
+    eventListeners.forEach(({ element, type, handler }) => {
+      element.removeEventListener(type, handler);
+    });
+    eventListeners = [];
+    
+    // Clean up DOM elements added by tests
+    document.querySelectorAll('.polluting-element, .lightbox').forEach(el => {
+      el.remove();
+    });
+    
+    // Reset body styles
+    document.body.style.overflow = 'auto';
+    
+    // Clear shared state
+    globalCounter = 0;
+    sharedCache = {};
+    
+    // Clear global variables
+    delete window.testGlobal;
+    delete window.userPreferences;
+    delete global.debugMode;
+    
+    // Clear localStorage
+    localStorage.clear();
+    
+    // Remove CSS classes
+    document.body.className = '';
   });
 
   // FLAKY TEST 25: Shared counter state pollution
@@ -130,33 +184,46 @@ describe('Flaky Memory and State Pollution Tests', () => {
     // Intentionally NOT cleaning up globals
   });
 
-  // FLAKY TEST 30: Timer pollution
-  test('should handle timers correctly (FLAKY: timer pollution)', (done) => {
+  // FIXED TEST 30: Timer pollution
+  test('should handle timers correctly (FIXED: deterministic timer cleanup)', (done) => {
     let timerCount = 0;
     
-    // Mock timer that might not be cleaned up
+    // Mock timer with proper cleanup tracking
     const mockStartTimer = () => {
       const interval = setInterval(() => {
         timerCount++;
       }, 50);
       
-      // Store interval but don't always clean it up
-      if (Math.random() > 0.5) {
-        setTimeout(() => {
-          clearInterval(interval);
-        }, 200);
-      }
-      // 50% chance timer keeps running - causes pollution
+      // Track timer for cleanup
+      activeTimers.push({ id: interval, type: 'interval' });
+      
+      // Deterministic cleanup after 200ms
+      const cleanup = setTimeout(() => {
+        clearInterval(interval);
+        // Remove from tracking array
+        const index = activeTimers.findIndex(t => t.id === interval);
+        if (index > -1) {
+          activeTimers.splice(index, 1);
+        }
+      }, 200);
+      
+      // Track cleanup timeout too
+      activeTimers.push({ id: cleanup, type: 'timeout' });
     };
 
     mockStartTimer();
     
-    setTimeout(() => {
-      // Timer count depends on whether previous test timers are still running
-      expect(timerCount).toBe(4); // FLAKY: might be higher if previous timers still running
+    const testTimeout = setTimeout(() => {
+      // Timer should have run approximately 4 times (200ms / 50ms = ~4)
+      // Allow for timing precision variations in test environment
       expect(timerCount).toBeGreaterThan(0);
+      expect(timerCount).toBeLessThanOrEqual(5); // Max 5 to account for timing variations
+      expect(timerCount).toBeGreaterThanOrEqual(3); // Min 3 to account for timing variations
       done();
     }, 250);
+    
+    // Track test timeout for cleanup
+    activeTimers.push({ id: testTimeout, type: 'timeout' });
   });
 
   // FLAKY TEST 31: Module state pollution
