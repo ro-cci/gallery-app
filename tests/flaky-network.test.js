@@ -104,11 +104,11 @@ describe('Flaky Network-Dependent Tests', () => {
     let attemptCount = 0;
     const maxRetries = 3;
     
-    // Mock API that fails more often
+    // Mock API that fails sometimes - reduced failure rate
     const mockUnreliableApi = () => {
       attemptCount++;
       return new Promise((resolve, reject) => {
-        const failureRate = 0.85; // 85% failure rate - much higher
+        const failureRate = 0.3; // 30% failure rate - more realistic
         const shouldFail = Math.random() < failureRate;
         
         setTimeout(() => {
@@ -117,18 +117,18 @@ describe('Flaky Network-Dependent Tests', () => {
           } else {
             resolve({ success: true, attempts: attemptCount });
           }
-        }, Math.random() * 200 + 100); // Longer delays
+        }, Math.random() * 50 + 25); // Shorter, more realistic delays
       });
     };
 
-    // Mock retry logic
+    // Mock retry logic with realistic scenarios
     const mockRetryRequest = async () => {
       for (let i = 0; i < maxRetries; i++) {
         try {
           return await mockUnreliableApi();
         } catch (error) {
           if (i === maxRetries - 1) throw error;
-          await new Promise(resolve => setTimeout(resolve, 50)); // Shorter retry delay
+          await new Promise(resolve => setTimeout(resolve, 25)); // Consistent retry delay
         }
       }
     };
@@ -136,14 +136,15 @@ describe('Flaky Network-Dependent Tests', () => {
     try {
       const result = await mockRetryRequest();
       
-      // These assertions assume success within retry limit - more restrictive
+      // Realistic assertions for successful retry scenarios
       expect(result.success).toBe(true);
-      expect(result.attempts).toBe(1); // FLAKY: ~85% chance of not being 1
-      expect(attemptCount).toBe(2); // FLAKY: attempt count is very random with 85% failure rate
-      expect(result.attempts).toBeLessThan(2); // FLAKY: ~85% chance of being >= 2
+      expect(result.attempts).toBeGreaterThan(0);
+      expect(result.attempts).toBeLessThanOrEqual(maxRetries);
+      expect(attemptCount).toBe(result.attempts);
     } catch (error) {
-      // Test will fail when all retries are exhausted (~50% of the time with 85% failure rate)
-      expect(error.message).toBe('Success'); // FLAKY: will fail when retries actually exhausted
+      // Test handles case when all retries are exhausted
+      expect(error.message).toContain('failed');
+      expect(attemptCount).toBe(maxRetries);
     }
   });
 
