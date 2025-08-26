@@ -184,58 +184,77 @@ describe('Flaky Network-Dependent Tests', () => {
     expect(result3.fromCache).toBe(false); // FLAKY: timing might be off, cache might still be valid
   });
 
-  // FLAKY TEST 23: WebSocket connection simulation
-  test('should handle WebSocket events (FLAKY: connection timing)', (done) => {
+  // FIXED: WebSocket connection simulation with deterministic event-driven logic
+  test('should handle WebSocket events (FIXED: deterministic connection)', async () => {
     let connectionState = 'disconnected';
     let messagesReceived = [];
     
-    // Mock WebSocket behavior
+    // Promise-based WebSocket mock with deterministic timing
     const mockWebSocket = {
       connect: () => {
-        // Random connection delay
-        setTimeout(() => {
-          connectionState = 'connected';
-          mockWebSocket.onopen && mockWebSocket.onopen();
-        }, Math.random() * 100 + 50);
+        return new Promise((resolve) => {
+          // Deterministic connection delay
+          setTimeout(() => {
+            connectionState = 'connected';
+            mockWebSocket.onopen && mockWebSocket.onopen();
+            resolve();
+          }, 50); // Fixed delay instead of random
+        });
       },
       
       send: (message) => {
-        if (connectionState === 'connected') {
-          // Simulate message echo with delay
-          setTimeout(() => {
-            messagesReceived.push(`Echo: ${message}`);
-            mockWebSocket.onmessage && mockWebSocket.onmessage({ data: `Echo: ${message}` });
-          }, Math.random() * 50 + 10);
-        }
+        return new Promise((resolve) => {
+          if (connectionState === 'connected') {
+            // Deterministic message echo with fixed delay
+            setTimeout(() => {
+              messagesReceived.push(`Echo: ${message}`);
+              mockWebSocket.onmessage && mockWebSocket.onmessage({ data: `Echo: ${message}` });
+              resolve();
+            }, 20); // Fixed delay instead of random
+          } else {
+            resolve();
+          }
+        });
       },
       
       onopen: null,
       onmessage: null
     };
 
-    // Set up event handlers
-    mockWebSocket.onopen = () => {
-      mockWebSocket.send('Hello WebSocket');
+    // Promise to track message reception
+    let messagePromiseResolve;
+    const messagePromise = new Promise((resolve) => {
+      messagePromiseResolve = resolve;
+    });
+
+    // Set up event handlers with Promise resolution
+    mockWebSocket.onopen = async () => {
+      await mockWebSocket.send('Hello WebSocket');
     };
     
     mockWebSocket.onmessage = (event) => {
-      // Check state after receiving message
-      setTimeout(() => {
-        expect(connectionState).toBe('connected');
-        expect(messagesReceived).toContain('Echo: Hello WebSocket'); // FLAKY: message might not arrive yet
-        expect(messagesReceived).toHaveLength(1);
-        done();
-      }, 10);
+      messagePromiseResolve();
     };
 
-    // Start connection
-    mockWebSocket.connect();
+    // Start connection and wait for completion
+    await mockWebSocket.connect();
     
-    // Check connection state too early
-    setTimeout(() => {
-      expect(connectionState).toBe('connected'); // FLAKY: connection might not be established yet
-    }, 75);
-  });
+    // Verify connection is established after connect() resolves
+    expect(connectionState).toBe('connected');
+    
+    // Wait for message to be received with timeout safety net
+    await Promise.race([
+      messagePromise,
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Message timeout')), 5000)
+      )
+    ]);
+    
+    // Verify final state
+    expect(connectionState).toBe('connected');
+    expect(messagesReceived).toContain('Echo: Hello WebSocket');
+    expect(messagesReceived).toHaveLength(1);
+  }, 10000); // 10 second timeout for the entire test
 
   // FLAKY TEST 24: File upload with progress
   test('should track upload progress correctly (FLAKY: progress timing)', (done) => {
